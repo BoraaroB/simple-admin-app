@@ -1,0 +1,7 @@
+
+# Visual code files
+.vscode
+
+.env
+node_modules
+package-lock.json

@@ -8,6 +8,7 @@ const constants = require('./constants/constants');
 const errorMiddleware = require('./middleware/error.middleware');
 
 const router = require('./router');
+const userService = require('./services/user.service');
 
 const server = express();
 
@@ -45,6 +46,7 @@ const _start = async () => {
     // start server on port
     server.listen(process.env.NODE_PORT, () => {
       console.log(`***** Server running on port ${process.env.NODE_PORT} *****`);
+      _init();
     })
   } catch (err) {
     console.error(`----- ERROR starting server -----`, err)
@@ -52,6 +54,27 @@ const _start = async () => {
 
 }
 
+/**
+ * _init function initializes a default admin user if the DB is empty
+ */
+const _init = async () => {
+  try {
+    const users = await userService.findAll({ password: 0 });
+    if (!users || users.length === 0) {
+      const adminUser = {
+        email: constants.INIT_ADMIN.ADMIN_EMAIL,
+        password: constants.INIT_ADMIN.ADMIN_PASSWORD,
+        confirmPassword: constants.INIT_ADMIN.ADMIN_PASSWORD, 
+        role: constants.INIT_ADMIN.ADMIN_ROLE,
+      }
+      await userService.create({user: adminUser, body: adminUser})
+      console.log(`Successfully created admin user`);
+    }
+    return;
+  } catch (err) {
+    console.error(`----- Error inserting initial admin user -----`, err)
+  }
+}
 
 /**
  * _connectToDB connection to DB

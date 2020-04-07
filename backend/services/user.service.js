@@ -45,20 +45,17 @@ const _checkIsValidUserData = (user, email, password, confirmPassword, role) => 
 
 /**
  * login function that login a user
- * @param {object} req http request object
  * @param {object} body body of the request
  * @param {object} options 
  * 
  * @return {object} user fresh logged user and token
  */
-module.exports.login = async (req, options) => {
+module.exports.login = async (body, options) => {
   try {
-    console.log('aaaaaaaaaaaaaaa')
-    if (!req.body.email) throw error('EMAIL_IS_REQUIRED');
-    if (!req.body.password) throw error('PASSWORD_IS_REQUIRED');
-    const { email, password } = req.body;
+    if (!body.email) throw error('EMAIL_IS_REQUIRED');
+    if (!body.password) throw error('PASSWORD_IS_REQUIRED');
+    const { email, password } = body;
     let user = await models.user.findOneByFields({ email });
-    console.log('aaaaaaaaaaaaaaa', user)
     if (!user) throw error('NOT_FOUND');
 
     if (!_validatePassword(password, user.password)) throw error('INVALID_PASSWORD')
@@ -78,23 +75,25 @@ module.exports.login = async (req, options) => {
 
 /**
  * create function that creates a new user
- * @param {object} req http request object
- * @param {object} options PASSWORD_IS_TO_SHORT
+ * @param {object} body body object of hte request
+ * @param {object} userData user that is logged in
+ * @param {object} options 
  * 
  * @return {object} newUser newly created user
  */
-module.exports.create = async (req, options = {}) => {
+module.exports.create = async (body, userData, options = {}) => {
   try {
-    const { email, password, confirmPassword, role } = req.body;
-    const { user } = req;
+    const { email, password, confirmPassword, role } = body;
 
     const foundUser = await models.user.findOneByFields({ email }, options);
     if (foundUser) throw error('ALREADY_EXIST');
 
-    _checkIsValidUserData(user, email, password, confirmPassword, role);
-    req.body.password = _cryptPassword(password);
-    const newUser = await models.user.create(req.body);
+    _checkIsValidUserData(userData, email, password, confirmPassword, role);
+    body.password = _cryptPassword(password);
+    let newUser = await models.user.create(body);
     console.log(`Successfully created a new user: ${newUser.email}`);
+    newUser = JSON.parse(JSON.stringify(newUser));
+    if(newUser && newUser.password) delete newUser.password;
     return newUser;
   } catch (err) {
     console.error(`----- Error creating a new user -----`, err)
@@ -104,31 +103,34 @@ module.exports.create = async (req, options = {}) => {
 
 /**
  * edit function that edit a user
- * @param {object} req http request object
+ * @param {string} userId id of the user who we are updating
+ * @param {object} body body of the request
+ * @param {object} userData logged in user data
  * @param {object} options 
  * 
  * @return {object} updated user
  */
-module.exports.update = async (req, options = {}) => {
+module.exports.update = async (userId, body, userData, options = {}) => {
   try {
-    if (!req.params.userId) throw error('MISSING_USER_ID');
-    const user = await models.user.findById(req.params.userId);
+    if (!userId) throw error('MISSING_USER_ID');
+    const user = await models.user.findById(userId);
 
     if (!user) throw error('NOT_FOUND');
 
-    if (!(req.user.role >= constants.USER.ROLES.ADMIN) || !(req.user.role <= constants.USER.ROLES.MANAGER)) {
+    if (!(userData.role >= constants.USER.ROLES.ADMIN) || !(userData.role <= constants.USER.ROLES.MANAGER)) {
       throw error('NOT_ALLOWED');
     }
-    if (req.user.role === constants.USER.ROLES.MANAGER) {
-      if (req.body.role && (req.body.role !== user.role)) {
+    if (userData.role === constants.USER.ROLES.MANAGER) {
+      if (body.role && body.role === constants.USER.ROLES.ADMIN && body.role !== user.role) {
         throw error('NOT_ALLOWED');
       }
     }
 
-    if (req.body.hasOwnProperty('role') && (req.body.role === 0 || constants.USER.ALL_ROLES.indexOf(req.body.role) === -1)) throw error('ROLE_BAD_FORMAT')
-    req.body.modifiedAt = new Date();
-    if(req.body.password) delete req.body.password;
-    let updatedUser = await models.user.update(req.params.userId, req.body);
+    
+    if (body.hasOwnProperty('role') && (body.role === 0 || constants.USER.ALL_ROLES.indexOf(body.role) === -1)) throw error('ROLE_BAD_FORMAT')
+    body.modifiedAt = new Date();
+    if(body.password) delete body.password;
+    let updatedUser = await models.user.update(userId, body);
     updatedUser = JSON.parse(JSON.stringify(updatedUser));
     if (updatedUser && updatedUser.password) delete updatedUser.password;
 
@@ -141,19 +143,20 @@ module.exports.update = async (req, options = {}) => {
 
 /**
  * delete function that delete user
- * @param {object} req http request object
- * 
- * @return {object} success object {success: true, message: `successfully deleted user: ${req.params.userId}`};
+ * @param {string} userId id of the user that we want ot delete
+ * @param {object} user user who is logged in
+ * @return {object} success object {success: true, message: `successfully deleted user: ${userId}`};
  */
-module.exports.delete = async (req) => {
+module.exports.delete = async (userId, user) => {
   try {
-    if (!req.params.userId) throw error('MISSING_USER_ID');
-    if (!req.user.role || req.user.role !== constants.USER.ROLES.ADMIN) throw error('NOT_ALLOWED');
+    console.log('This is user: ', user);
+    if (!userId) throw error('MISSING_USER_ID');
+    if (!user.role || user.role !== constants.USER.ROLES.ADMIN) throw error('NOT_ALLOWED');
 
-    const deletedUser = await models.user.delete(req.params.userId);
-    deletedUser ? console.log(`Successfully deleted user: ${req.params.userId}`) : console.log(`Not found user: ${req.params.userId}`)
+    const deletedUser = await models.user.delete(userId);
+    deletedUser ? console.log(`Successfully deleted user: ${userId}`) : console.log(`Not found user: ${userId}`)
 
-    return { success: true, message: `successfully deleted user: ${req.params.userId}` };
+    return { success: true, message: `successfully deleted user: ${userId}` };
   } catch (err) {
     console.error(`----- Error edit user -----`, err);
     throw err;
@@ -161,10 +164,10 @@ module.exports.delete = async (req) => {
 }
 
 /**
- * create function that creates a new user
- * @param {object} req http request object
+ * findAll returns all users
+ * @param {object} options 
  * 
- * @return {object} 
+ * @return {Array} an array of users 
  */
 module.exports.findAll = async (options = {}) => {
   try {
@@ -179,13 +182,13 @@ module.exports.findAll = async (options = {}) => {
 
 /**
  * findUser function that find a user
- * @param {object} req http request object
+ * @param {string} userId user id that we are looking for
  * 
  * @return {object} found user
  */
-module.exports.findUser = async (req, body, options = {}) => {
+module.exports.findUser = async (userId, options = {}) => {
   try {
-    const user = await models.user.findById(req.user._id, options)
+    const user = await models.user.findById(userId, options)
     console.log(`Successfully find user: `);
     return user;
   } catch (err) {

@@ -46,15 +46,15 @@ const _checkIsValidUserData = (user, email, password, confirmPassword, role) => 
 /**
  * login function that login a user
  * @param {object} body body of the request
- * @param {object} options 
  * 
  * @return {object} user fresh logged user and token
  */
-module.exports.login = async (body, options) => {
+module.exports.login = async (body) => {
   try {
-    if (!body.email) throw error('EMAIL_IS_REQUIRED');
-    if (!body.password) throw error('PASSWORD_IS_REQUIRED');
     const { email, password } = body;
+    if (!email) throw error('EMAIL_IS_REQUIRED');
+    if (!password) throw error('PASSWORD_IS_REQUIRED');
+
     let user = await models.user.findOneByFields({ email });
     if (!user) throw error('NOT_FOUND');
 
@@ -93,7 +93,7 @@ module.exports.create = async (body, userData, options = {}) => {
     let newUser = await models.user.create(body);
     console.log(`Successfully created a new user: ${newUser.email}`);
     newUser = JSON.parse(JSON.stringify(newUser));
-    if(newUser && newUser.password) delete newUser.password;
+    if (newUser && newUser.password) delete newUser.password;
     return newUser;
   } catch (err) {
     console.error(`----- Error creating a new user -----`, err)
@@ -113,23 +113,24 @@ module.exports.create = async (body, userData, options = {}) => {
 module.exports.update = async (userId, body, userData, options = {}) => {
   try {
     if (!userId) throw error('MISSING_USER_ID');
+    if (body.hasOwnProperty('role') && (body.role === 0 || constants.USER.ALL_ROLES.indexOf(body.role) === -1)) throw error('ROLE_BAD_FORMAT')
+
     const user = await models.user.findById(userId);
 
     if (!user) throw error('NOT_FOUND');
 
-    if (!(userData.role >= constants.USER.ROLES.ADMIN) || !(userData.role <= constants.USER.ROLES.MANAGER)) {
-      throw error('NOT_ALLOWED');
-    }
+    if (userData.role > constants.USER.ROLES.MANAGER) throw error('NOT_ALLOWED');
+    
     if (userData.role === constants.USER.ROLES.MANAGER) {
-      if (body.role && body.role === constants.USER.ROLES.ADMIN && body.role !== user.role) {
-        throw error('NOT_ALLOWED');
-      }
+      //Manager can't change admin user role
+      if (user.role === constants.USER.ROLES.ADMIN) throw error('NOT_ALLOWED');
+      //Manager can't set user to admin
+      if (body.role < constants.USER.ROLES.MANAGER) throw error('NOT_ALLOWED');
+      
     }
 
-    
-    if (body.hasOwnProperty('role') && (body.role === 0 || constants.USER.ALL_ROLES.indexOf(body.role) === -1)) throw error('ROLE_BAD_FORMAT')
     body.modifiedAt = new Date();
-    if(body.password) delete body.password;
+    if (body.password) delete body.password;
     let updatedUser = await models.user.update(userId, body);
     updatedUser = JSON.parse(JSON.stringify(updatedUser));
     if (updatedUser && updatedUser.password) delete updatedUser.password;

@@ -43,8 +43,8 @@ const Auth = {
         if (!user) {
           return next(error('NOT_AUTHORIZED'));
         }
-        const foundUser = JSON.parse(JSON.stringify(user))
-        req.user = foundUser;
+        
+        req.user = user.toJSON();
         next();
       } catch (error) {
         console.error('----- Error auth middleware user: ----- ', error)

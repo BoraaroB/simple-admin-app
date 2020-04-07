@@ -23,13 +23,13 @@ const _start = async () => {
   try {
     // setting cors
     server
-        .use(cors())
-        .use(function (req, res, next) {
-            res.header('Access-Control-Allow-Origin', '*');
-            res.header('Access-Control-Allow-Methods', ' GET, POST, PUT, DELETE');
-            res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, X-Auth-Token');
-            next();
-        });
+      .use(cors())
+      .use(function (req, res, next) {
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', ' GET, POST, PUT, DELETE');
+        res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, X-Auth-Token');
+        next();
+      });
     console.log(`***** Starting server *****`)
     server.use(bodyParser.json());
 
@@ -41,11 +41,12 @@ const _start = async () => {
     server.use(errorMiddleware);
 
     // connection to DB
-      await _connectToDB();
+    await _connectToDB();
 
+    const PORT = process.env.NODE_PORT
     // start server on port
-    server.listen(process.env.NODE_PORT, () => {
-      console.log(`***** Server running on port ${process.env.NODE_PORT} *****`);
+    server.listen(PORT, () => {
+      console.log(`***** Server running on port ${PORT} *****`);
       _init();
     })
   } catch (err) {
@@ -64,7 +65,7 @@ const _init = async () => {
       const adminUser = {
         email: constants.INIT_ADMIN.ADMIN_EMAIL,
         password: constants.INIT_ADMIN.ADMIN_PASSWORD,
-        confirmPassword: constants.INIT_ADMIN.ADMIN_PASSWORD, 
+        confirmPassword: constants.INIT_ADMIN.ADMIN_PASSWORD,
         role: constants.INIT_ADMIN.ADMIN_ROLE,
       }
       await userService.create(adminUser, adminUser)

@@ -67,7 +67,7 @@ const _init = async () => {
         confirmPassword: constants.INIT_ADMIN.ADMIN_PASSWORD, 
         role: constants.INIT_ADMIN.ADMIN_ROLE,
       }
-      await userService.create({user: adminUser, body: adminUser})
+      await userService.create(adminUser, adminUser)
       console.log(`Successfully created admin user`);
     }
     return;

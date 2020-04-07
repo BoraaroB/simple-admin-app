@@ -13,7 +13,7 @@ In order to be able to start the application following software needs to be inst
 
 ### Setup Backend ###
 
-In order to setup the application in navigate to **backend root application folder** run the following commands
+In order to setup the application navigate to **backend root application folder** run the following commands
  - `npm install`
 
 ### Configuration ###
@@ -29,5 +29,5 @@ Supported environment variables are stored in `.env` file
 
 ### Setup Frontend ###
 
-In order to setup the application in navigate to **frontend root application folder** run the following commands
+In order to setup the application navigate to **frontend root application folder** run the following commands
  - `npm install`

@@ -11,7 +11,7 @@ const errorMiddleware = require('./middleware/error.middleware');
 const loggerMiddleware = require('./middleware/logger.middleware');
 
 const router = require('./router');
-const userService = require('./services/user.service');
+const userService = require('./modules/User/user.service');
 
 const server = express();
 

@@ -25,7 +25,6 @@ export const UserProvider = ({ children }) => {
       try {
         dispatch(loading())
         const data = await userAPI.edit(user)
-        console.log('UPDATED USER: ', data)
         dispatch(editUserAction(data.data.user, `Successfully edited user: ${user.email}`));
       } catch (err) {
         if (!err.response.data) {

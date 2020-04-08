@@ -7,7 +7,7 @@ export const sessionService = {
       localStorage.setItem('simpleAdminApp', JSON.stringify(user));
   },
   /**
- * Destroy user object from local storage and redirects to login
+ * Destroy user object from local storage 
  */
   destroy() {
       localStorage.removeItem('simpleAdminApp');

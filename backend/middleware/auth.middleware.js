@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const models = require('../db/').models;
 const error = require('../lib/error');
+const logger = require('../lib/logger');
 
 /**
  * 
@@ -27,7 +28,7 @@ const Auth = {
     jwt.verify(token, process.env.TOKEN_SECRET, async function (err, decoded) {
       if (err) {
         if (err.message == 'jwt expired') {
-          console.error('----- Error Your session has been expired -----');
+          logger.error(null, '----- Error Your session has been expired -----');
           return next(error('EXPIRED'));
         } else {
           return next(error('NOT_AUTHORIZED'));
@@ -47,7 +48,7 @@ const Auth = {
         req.user = user.toJSON();
         next();
       } catch (error) {
-        console.error('----- Error auth middleware user: ----- ', error)
+        logger.error(null, '----- Error auth middleware user: ----- ', error)
         next(error)
       }
 

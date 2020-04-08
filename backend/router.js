@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const logger = require('./lib/logger');
 const MODULES_PATH = path.join(__dirname, '/modules');
 
 /**
@@ -26,7 +27,7 @@ exports.load = app => {
                 if (fs.existsSync(routerPath)) {
                     const routes = require(routerPath);
                     app.use(`/api/${dir.toLowerCase()}`, routes);
-                    console.log(`***** Module ${dir.toLowerCase()} attached *****`);
+                    logger.info(null, `***** Module ${dir.toLowerCase()} attached *****`);
                 }
             }
             if (list.length === 0 || index === list.length - 1) {

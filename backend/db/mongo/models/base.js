@@ -1,7 +1,7 @@
 
 const mongoose = require('mongoose');
 const _ = require('lodash');
-// logger = require('../../../../logger');
+const logger = require('../../../lib/logger');
 const error = require('../../../lib/error');
 
 module.exports = function (schema, name) {
@@ -11,7 +11,7 @@ module.exports = function (schema, name) {
     try {
       mongoId = mongoose.Types.ObjectId(id);
     } catch (e) {
-      console.error(`Bd id format: ${id}`)
+      logger.error(null, `MONGO ID ERROR: Bed id format: ${id}`, e)
     }
     return mongoId;
   };
@@ -29,6 +29,7 @@ module.exports = function (schema, name) {
         const params = _.defaults({ _id: mongoID });
         model.findOne(params, options, function (err, dbGroup) {
           if (err) {
+            logger.error(null, `DATABASE ERROR: error find by ID `, err)
             return reject(error('DATABASE_ERROR'));
           }
           resolve(dbGroup);
@@ -48,6 +49,7 @@ module.exports = function (schema, name) {
     return new Promise((resolve, reject) => {
       model.find({}, options, function (err, rows) {
         if (err) {
+          logger.error(null, `DATABASE ERROR: error find all `, err)
           return reject(error('DATABASE_ERROR'));
         }
         resolve(rows);
@@ -64,6 +66,7 @@ module.exports = function (schema, name) {
     return new Promise((resolve, reject) => {
       model.findOne(fields, options, function (err, rows) {
         if (err) {
+          logger.error(null, `DATABASE ERROR: error find one by fields `, err)
           return reject(error('DATABASE_ERROR'));
         }
         resolve(rows);
@@ -80,6 +83,7 @@ module.exports = function (schema, name) {
     return new Promise((resolve, reject) => {
       model.find(fields, options, function (err, rows) {
         if (err) {
+          logger.error(null, `DATABASE ERROR: error find by fields `, err)
           return reject(error('DATABASE_ERROR'));
         }
         resolve(rows);
@@ -96,6 +100,7 @@ module.exports = function (schema, name) {
     return new Promise((resolve, reject) => {
       model.find(fields, options).sort(sort).exec(function (err, rows) {
         if (err) {
+          logger.error(null, `DATABASE ERROR: error find by fields `, err)
           return reject(error('DATABASE_ERROR'));
         }
         resolve(rows);
@@ -108,6 +113,7 @@ module.exports = function (schema, name) {
       const record = new model(data);
       record.save(function (err, row) {
         if (err) {
+          logger.error(null, `DATABASE ERROR: error saving `, err)
           return reject(error('DATABASE_ERROR'));
         }
         resolve(row);
@@ -131,7 +137,7 @@ module.exports = function (schema, name) {
         
         model.findByIdAndUpdate({ _id: mongoID },  data, options, function (err, row) {
           if (err) {
-            console.log('ERRORRRRRRR:', err)
+            logger.error(null, 'DATABASE ERROR: error updating ', err)
             return reject(error('DATABASE_ERROR'));
           }
           resolve(row);
@@ -155,6 +161,7 @@ module.exports = function (schema, name) {
       if (mongoID) {
         model.deleteOne({ _id: mongoID }, function (err, data) {
           if (err) {
+            logger.error(null, `DATABASE ERROR: error delete ${id}`, err)
             return reject(error('DATABASE_ERROR'));
           }
           resolve(data);

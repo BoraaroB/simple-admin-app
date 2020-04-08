@@ -2,11 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const isEmail = require('validator').isEmail
 const error = require('../lib/error');
+const logger = require('../lib/logger');
 const models = require('../db').models;
 const constants = require('../constants/constants');
 
-
-console.log(isEmail)
 
 const _cryptPassword = (password) => {
   return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
@@ -67,7 +66,7 @@ module.exports.login = async (body) => {
       token
     }
   } catch (err) {
-    console.error(`----- Error login user -----`, err)
+    logger.error(null, `----- Error login user -----`, err)
     throw err;
   }
 }
@@ -91,12 +90,12 @@ module.exports.create = async (body, userData, options = {}) => {
     _checkIsValidUserData(userData, email, password, confirmPassword, role);
     body.password = _cryptPassword(password);
     let newUser = await models.user.create(body);
-    console.log(`Successfully created a new user: ${newUser.email}`);
+    logger.info(null, `Successfully created a new user: ${newUser.email}`);
     newUser = JSON.parse(JSON.stringify(newUser));
     if (newUser && newUser.password) delete newUser.password;
     return newUser;
   } catch (err) {
-    console.error(`----- Error creating a new user -----`, err)
+    logger.error(null, `----- Error creating a new user -----`, err)
     throw err;
   }
 };
@@ -137,7 +136,7 @@ module.exports.update = async (userId, body, userData, options = {}) => {
 
     return updatedUser;
   } catch (err) {
-    console.error(`----- Error edit user -----`, err);
+    logger.error(null, `----- Error edit user -----`, err);
     throw err;
   }
 }
@@ -150,16 +149,16 @@ module.exports.update = async (userId, body, userData, options = {}) => {
  */
 module.exports.delete = async (userId, user) => {
   try {
-    console.log('This is user: ', user);
+    logger.info(null, 'This is user: ', user);
     if (!userId) throw error('MISSING_USER_ID');
     if (!user.role || user.role !== constants.USER.ROLES.ADMIN) throw error('NOT_ALLOWED');
 
     const deletedUser = await models.user.delete(userId);
-    deletedUser ? console.log(`Successfully deleted user: ${userId}`) : console.log(`Not found user: ${userId}`)
+    deletedUser ? logger.info(null, `Successfully deleted user: ${userId}`) : logger.info(null, `Not found user: ${userId}`)
 
     return { success: true, message: `successfully deleted user: ${userId}` };
   } catch (err) {
-    console.error(`----- Error edit user -----`, err);
+    logger.error(null, `----- Error edit user -----`, err);
     throw err;
   }
 }
@@ -173,10 +172,10 @@ module.exports.delete = async (userId, user) => {
 module.exports.findAll = async (options = {}) => {
   try {
     const users = await models.user.findAll(options);
-    console.log(`Successfully find all users`);
+    logger.info(null, `Successfully find all users`);
     return users;
   } catch (err) {
-    console.error(`----- Error finding all users -----`);
+    logger.error(null, `----- Error finding all users -----`);
     throw err
   }
 }
@@ -190,9 +189,9 @@ module.exports.findAll = async (options = {}) => {
 module.exports.findUser = async (userId, options = {}) => {
   try {
     const user = await models.user.findById(userId, options)
-    console.log(`Successfully find user: `);
+    logger.info(null, `Successfully find user: `);
     return user;
   } catch (err) {
-    console.error(`----- Error finding user -----: `, err);
+    logger.error(null, `----- Error finding user -----: `, err);
   }
 }

@@ -5,6 +5,7 @@ const error = require('../lib/error');
 const logger = require('../lib/logger');
 const models = require('../db').models;
 const constants = require('../constants/constants');
+const microsoftAuth = require('../middleware/microsoftAuth.middleware').microsoftAuth
 
 
 const _cryptPassword = (password) => {
@@ -193,5 +194,33 @@ module.exports.findUser = async (userId, options = {}) => {
     return user;
   } catch (err) {
     logger.error(null, `----- Error finding user -----: `, err);
+    throw err;
+  }
+}
+
+/**
+ * auth with microsoft account account
+ * @param {object} body request body with all data from microsoft including access token
+ * 
+ * @return {object} user fresh logged user and token
+ */
+module.exports.auth = async (body) => {
+  try {
+    const microsoftUser = await microsoftAuth(body.accessToken);
+    if (microsoftUser) {
+      const user = await models.user.findOneByFields({email: microsoftUser.userPrincipalName}, {email: 1, role: 1})
+      if(!user) {
+        const newUser = await models.user.create({email: microsoftUser.userPrincipalName, role: constants.USER.ROLES.USER});
+        const token = _generateToken(newUser);
+        logger.info(`Successfully logged microsoft user`)
+        return { user: newUser, token }
+      } else {
+        const token = _generateToken(user);
+        return { user, token }
+      }
+    }
+  } catch (err) {
+    logger.error(null, '----- Error login using microsoft account -----', err);
+    throw err;
   }
 }

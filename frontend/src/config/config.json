@@ -1,10 +1,10 @@
 {
   "dev": {
-    "API_BASE_URL": "http://localhost:3000/api",
+    "API_BASE_URL": "http://localhost:3005/api",
     "APP_BASE_URL": "http://localhost:3001"
   },
   "production": {
-    "API_BASE_URL": "http://localhost:3000/api",
+    "API_BASE_URL": "http://localhost:3005/api",
     "APP_BASE_URL": "http://localhost:3001"
   }
 }

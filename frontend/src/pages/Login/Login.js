@@ -13,6 +13,7 @@ import Alert from '../../components/Alert/Alert';
 import { userAPI } from '../../api/index';
 import { sessionService } from '../../sessionServices/sessionServices';
 import { LoginContext } from '../../context/loginContext';
+import MicrosoftLogin from './MicrosoftLogin';
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -56,9 +57,9 @@ const Login = () => {
     try {
       e.preventDefault();
       const { data } = await userAPI.login(userData);
-      if (data && data.data) {
-        sessionService.create(data.data);
-        setUser(data.data.user);
+      if (data) {
+        sessionService.create(data);
+        setUser(data);
         history.push('/users');
       }
     } catch (err) {
@@ -92,6 +93,7 @@ const Login = () => {
 
   return (
     <Container component="main" maxWidth="xs">
+      
       <CssBaseline />
       <div className={classes.paper}>
         {error ? (
@@ -144,6 +146,7 @@ const Login = () => {
             Login
         </Button>
         </form>
+        <MicrosoftLogin />
       </div>
     </Container>
   )

@@ -5,7 +5,8 @@ export const userAPI = {
   getAll,
   add,
   edit,
-  deleteUser
+  deleteUser,
+  auth
 };
 
 function login(user) {
@@ -26,4 +27,8 @@ function edit(user) {
 
 function deleteUser(userId) {
   return axiosAPI.delete(`/user/${userId}`);
+}
+
+function auth(userData) {
+  return axiosAPI.post('/user/auth', userData);
 }

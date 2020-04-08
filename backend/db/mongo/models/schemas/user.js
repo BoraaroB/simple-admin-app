@@ -15,8 +15,7 @@ module.exports = (function () {
      * password of the user
      */
     password: {
-      type: String,
-      required: true
+      type: String
     },
     /**
      * role of the user, possible roles: ADMIN: 1, MANAGER: 2, USER: 3

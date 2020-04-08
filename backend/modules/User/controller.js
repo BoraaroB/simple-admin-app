@@ -3,7 +3,7 @@ const userService = require('../../services/user.service');
 module.exports.login = async (req, res, next) => {
   try {
     const data = await userService.login(req.body);
-    res.send({message: 'Under construction', data});
+    res.send(data);
   } catch (err) {
     next(err)
   }
@@ -50,5 +50,14 @@ module.exports.createUser = async (req, res, next) => {
     res.send({newUser: data, success: true, message: `Successfully created a new user: ${data.email}`});
   } catch (err) {
     next(err);
+  }
+}
+
+module.exports.auth = async (req, res, next) => {
+  try {
+    const data = await userService.auth(req.body)
+    res.send(data);
+  } catch (err) {
+    next(err)
   }
 }

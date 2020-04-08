@@ -127,7 +127,7 @@ return (
               margin="normal"
               id="confirmPassword"
               label="Confirm password"
-              type="confirmPassword"
+              type="password"
               name="confirmPassword"
               value={localData && localData.user && localData.user.confirmPassword ? localData.user.confirmPassword : ''}
               fullWidth

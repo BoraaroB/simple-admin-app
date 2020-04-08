@@ -4,6 +4,7 @@ const isEmail = require('validator').isEmail
 const error = require('../lib/error');
 const logger = require('../lib/logger');
 const models = require('../db').models;
+const config = require('../config');
 const constants = require('../constants/constants');
 const microsoftAuth = require('../middleware/microsoftAuth.middleware').microsoftAuth
 
@@ -21,7 +22,7 @@ const _generateToken = (user) => {
   const token = jwt.sign({
     email: user.email,
     userId: user._id
-  }, process.env.TOKEN_SECRET, {
+  }, config.TOKEN_SECRET, {
     expiresIn: 3600 * 24 // expires in 1 hour/
   });
   return token;
@@ -212,10 +213,11 @@ module.exports.auth = async (body) => {
       if(!user) {
         const newUser = await models.user.create({email: microsoftUser.userPrincipalName, role: constants.USER.ROLES.USER});
         const token = _generateToken(newUser);
-        logger.info(`Successfully logged microsoft user`)
+        logger.info(null, `Successfully created and logged microsoft user ${newUser.email}`)
         return { user: newUser, token }
       } else {
         const token = _generateToken(user);
+        logger.info(null, `Successfully logged microsoft user ${user.email}`)
         return { user, token }
       }
     }

@@ -55,7 +55,7 @@ module.exports.createUser = async (req, res, next) => {
 
 module.exports.auth = async (req, res, next) => {
   try {
-    const data = await userService.auth(req.body)
+    const data = await userService.auth(req.body);
     res.send(data);
   } catch (err) {
     next(err)

@@ -1,12 +1,12 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const isEmail = require('validator').isEmail
-const error = require('../lib/error');
-const logger = require('../lib/logger');
-const models = require('../db').models;
-const config = require('../config');
-const constants = require('../constants/constants');
-const microsoftAuth = require('../middleware/microsoftAuth.middleware').microsoftAuth
+const error = require('../../lib/error');
+const logger = require('../../lib/logger');
+const models = require('../../db').models;
+const config = require('../../config');
+const constants = require('../../constants/constants');
+const microsoftAuth = require('../../middleware/microsoftAuth.middleware').microsoftAuth
 
 
 const _cryptPassword = (password) => {
